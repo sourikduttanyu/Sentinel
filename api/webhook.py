@@ -1,10 +1,12 @@
 import hashlib
 import hmac
 import json
+import uuid
 
 from fastapi import APIRouter, Header, HTTPException, Request
 
 from config import GITHUB_WEBHOOK_SECRET
+from graph.workflow import graph
 from tools.github_tool import get_installation_token, get_pr_diff, get_pr_files
 
 router = APIRouter()
@@ -49,4 +51,20 @@ async def webhook(
     print(f"[Webhook] Files changed: {files_changed}")
     print(f"[Webhook] Diff length: {len(diff)} chars")
 
-    return {"status": "received", "pr": pr_number, "repo": repo}
+    state = {
+        "pr_number": pr_number,
+        "repo": repo,
+        "diff": diff,
+        "files_changed": files_changed,
+        "security_findings": [],
+        "docs_findings": [],
+        "supervisor_summary": "",
+        "human_approved": False,
+        "run_id": str(uuid.uuid4()),
+    }
+
+    print(f"[Webhook] Starting graph run: {state['run_id']}")
+    result = graph.invoke(state)
+    print(f"[Webhook] Graph complete. Summary: {result['supervisor_summary']}")
+
+    return {"status": "complete", "pr": pr_number, "repo": repo, "run_id": state["run_id"]}
