@@ -1,6 +1,7 @@
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
+import config  # noqa: F401 — triggers load_dotenv()
 from models.state import PRReviewState
 from tools.semgrep_tool import run_semgrep
 
