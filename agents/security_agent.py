@@ -1,7 +1,7 @@
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
-import config  # noqa: F401 — triggers load_dotenv()
+import config
 from models.state import PRReviewState
 from tools.semgrep_tool import run_semgrep
 
@@ -18,13 +18,16 @@ class SecurityFindings(BaseModel):
     findings: list[SecurityFinding]
 
 
-_llm = ChatAnthropic(model="claude-haiku-4-5-20251001").with_structured_output(SecurityFindings)
-
-
 def security_node(state: PRReviewState) -> dict:
     print("[SecurityAgent] running Semgrep...")
     raw_findings = run_semgrep(state.get("files_content", {}))
     print(f"[SecurityAgent] Semgrep found {len(raw_findings)} raw findings")
+
+    llm = ChatAnthropic(
+        model="claude-haiku-4-5-20251001",
+        api_key=config.ANTHROPIC_API_KEY,
+        temperature=0,
+    ).with_structured_output(SecurityFindings)
 
     diff = state.get("diff", "")
     semgrep_summary = (
@@ -51,7 +54,7 @@ Tasks:
 
 Return only findings that are genuine security concerns. If none, return an empty list."""
 
-    result: SecurityFindings = _llm.invoke(prompt)
+    result: SecurityFindings = llm.invoke(prompt)
     print(f"[SecurityAgent] Claude identified {len(result.findings)} security findings")
 
     return {"security_findings": [f.model_dump() for f in result.findings]}

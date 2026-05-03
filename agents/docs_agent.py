@@ -1,7 +1,7 @@
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
-import config  # noqa: F401 — triggers load_dotenv()
+import config
 from models.state import PRReviewState
 
 
@@ -17,9 +17,6 @@ class DocsFindings(BaseModel):
     findings: list[DocsFinding]
 
 
-_llm = ChatAnthropic(model="claude-haiku-4-5-20251001").with_structured_output(DocsFindings)
-
-
 def docs_node(state: PRReviewState) -> dict:
     print("[DocsAgent] analyzing diff for documentation issues...")
 
@@ -28,6 +25,12 @@ def docs_node(state: PRReviewState) -> dict:
 
     if not diff.strip():
         return {"docs_findings": []}
+
+    llm = ChatAnthropic(
+        model="claude-haiku-4-5-20251001",
+        api_key=config.ANTHROPIC_API_KEY,
+        temperature=0,
+    ).with_structured_output(DocsFindings)
 
     files_summary = "\n\n".join(
         f"=== {path} ===\n{content[:3000]}"
@@ -52,7 +55,7 @@ Only flag functions that were actually added or changed in this diff.
 Skip test functions, private helpers with obvious names, and one-liners.
 If documentation is adequate or no code was changed, return an empty list."""
 
-    result: DocsFindings = _llm.invoke(prompt)
+    result: DocsFindings = llm.invoke(prompt)
     print(f"[DocsAgent] found {len(result.findings)} documentation issues")
 
     return {"docs_findings": [f.model_dump() for f in result.findings]}
