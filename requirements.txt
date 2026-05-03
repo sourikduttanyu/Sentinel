@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+langgraph
+langchain-anthropic
+langchain
+PyJWT
+cryptography
+httpx
+python-dotenv
+semgrep
