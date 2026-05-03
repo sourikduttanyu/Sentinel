@@ -12,14 +12,14 @@
 
 ---
 
-## Day 2 — SecurityAgent ⬜ TODO
-- [ ] Semgrep subprocess tool (`tools/semgrep_tool.py`)
-- [ ] SecurityAgent calls Semgrep on diff files
-- [ ] SecurityAgent sends Semgrep output + diff to Claude
-- [ ] Returns structured findings: `{file, line, severity, description, suggestion}`
-- [ ] LangSmith traces wired (2 env vars already set)
+## Day 2 — SecurityAgent ✅ COMPLETE
+- [x] Semgrep subprocess tool (`tools/semgrep_tool.py`)
+- [x] SecurityAgent calls Semgrep on diff files
+- [x] SecurityAgent sends Semgrep output + diff to Claude
+- [x] Returns structured findings: `{file, line, severity, description, suggestion}`
+- [x] LangSmith traces wired (2 env vars already set)
 
-**Verify:** Real PR → SecurityAgent → findings printed with severity levels
+**Result:** PR #3 → 6 Semgrep raw findings → 4 Claude findings (SQL injection CRITICAL, RCE CRITICAL, hardcoded creds HIGH, debug endpoints HIGH). Claude caught 1 contextual issue Semgrep missed.
 
 ---
 
