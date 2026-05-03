@@ -1,6 +1,12 @@
+import os
+import sys
 import uvicorn
 from fastapi import FastAPI
 from api.webhook import router
+
+# Ensure venv binaries (semgrep) are on PATH
+venv_bin = os.path.join(sys.prefix, "bin")
+os.environ["PATH"] = venv_bin + os.pathsep + os.environ.get("PATH", "")
 
 app = FastAPI(title="Sentinel")
 app.include_router(router)

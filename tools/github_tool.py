@@ -57,6 +57,25 @@ def get_pr_files(repo: str, pr_number: int, token: str) -> list[str]:
     return [f["filename"] for f in resp.json()]
 
 
+def get_file_content(repo: str, path: str, ref: str, token: str) -> str | None:
+    import base64
+    resp = httpx.get(
+        f"https://api.github.com/repos/{repo}/contents/{path}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+        params={"ref": ref},
+    )
+    if resp.status_code != 200:
+        return None
+    data = resp.json()
+    if data.get("encoding") != "base64":
+        return None
+    return base64.b64decode(data["content"]).decode("utf-8", errors="replace")
+
+
 def post_review_comment(repo: str, pr_number: int, body: str, token: str) -> None:
     resp = httpx.post(
         f"https://api.github.com/repos/{repo}/pulls/{pr_number}/reviews",

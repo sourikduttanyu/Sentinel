@@ -7,7 +7,7 @@ from fastapi import APIRouter, Header, HTTPException, Request
 
 from config import GITHUB_WEBHOOK_SECRET
 from graph.workflow import graph
-from tools.github_tool import get_installation_token, get_pr_diff, get_pr_files
+from tools.github_tool import get_file_content, get_installation_token, get_pr_diff, get_pr_files
 
 router = APIRouter()
 
@@ -47,15 +47,24 @@ async def webhook(
     token = get_installation_token()
     diff = get_pr_diff(repo, pr_number, token)
     files_changed = get_pr_files(repo, pr_number, token)
+    head_sha = data["pull_request"]["head"]["sha"]
+
+    files_content = {}
+    for path in files_changed:
+        content = get_file_content(repo, path, head_sha, token)
+        if content:
+            files_content[path] = content
 
     print(f"[Webhook] Files changed: {files_changed}")
     print(f"[Webhook] Diff length: {len(diff)} chars")
+    print(f"[Webhook] File contents fetched: {list(files_content.keys())}")
 
     state = {
         "pr_number": pr_number,
         "repo": repo,
         "diff": diff,
         "files_changed": files_changed,
+        "files_content": files_content,
         "security_findings": [],
         "docs_findings": [],
         "supervisor_summary": "",
