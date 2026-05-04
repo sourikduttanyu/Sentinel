@@ -78,8 +78,8 @@
 
 ## Post-Launch (during job search)
 - [ ] Redis checkpointer swap (resume bullet: checkpoint recovery time)
-- [ ] Latency benchmark across 5+ real PRs — avg, p95, stddev
+- [x] Latency benchmark script — `scripts/benchmark.py` parses server log, reports min/avg/p50/p95/p99/stddev
 - [ ] False positive delta measured across 10 labeled PRs (need ground truth labels)
 - [ ] Cost per review — instrument token usage via LangSmith, compare Haiku vs Sonnet
-- [ ] Prometheus metrics + Grafana screenshot
-- [ ] PerformanceAgent added as third parallel node
+- [x] Prometheus metrics — `sentinel_reviews_total`, `sentinel_review_latency_seconds`, `sentinel_findings_total` exposed at GET /metrics
+- [x] PerformanceAgent — third parallel node (N+1, unbounded queries, sync I/O, inefficient loops, missing pagination)
