@@ -65,17 +65,18 @@
 
 ---
 
-## Day 7 — Buffer / Polish ⬜ TODO
-- [ ] README finalized with architecture diagram
-- [ ] Demo script written (what to show in interviews)
-- [ ] At least one LangSmith trace screenshot saved
-- [ ] Repo public and clean
+## Day 7 — Polish ✅ COMPLETE
+- [x] README finalized — architecture, metrics table, resume bullets
+- [x] DEMO.md — full interview script with talking points for every likely question
+- [x] Repo public and clean (no secrets, no WAL files)
+- [ ] LangSmith trace screenshot — grab from smith.langchain.com and add to README
 
 ---
 
 ## Post-Launch (during job search)
 - [ ] Redis checkpointer swap (resume bullet: checkpoint recovery time)
-- [ ] False positive delta measured across 10 labeled PRs
+- [ ] Latency benchmark across 5+ real PRs — avg, p95, stddev
+- [ ] False positive delta measured across 10 labeled PRs (need ground truth labels)
+- [ ] Cost per review — instrument token usage via LangSmith, compare Haiku vs Sonnet
 - [ ] Prometheus metrics + Grafana screenshot
-- [ ] Cost comparison: Haiku vs Sonnet per review
 - [ ] PerformanceAgent added as third parallel node
