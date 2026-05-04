@@ -94,6 +94,8 @@ GitHub Webhook
 
 ## Setup
 
+> Full step-by-step instructions including GitHub App creation: **[SETUP.md](./SETUP.md)**
+
 ```bash
 git clone https://github.com/sourikduttanyu/Sentinel
 cd Sentinel
