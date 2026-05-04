@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 .venv/
 sentinel.db
+sentinel.db-shm
+sentinel.db-wal
