@@ -63,6 +63,9 @@ GitHub Webhook (PR opened/synchronize)
 | Claude final findings after filtering | 4–5 |
 | Contextual findings Claude added vs Semgrep | 1 (debug endpoint exposure) |
 | LLM calls per review | 3 (Security + Docs + Supervisor) |
+| Cost per review — PR with findings | ~$0.016 (Claude Haiku) |
+| Cost per review — clean PR | ~$0.003 (Claude Haiku) |
+| Tokens per full review | ~7,500–7,800 |
 | Checkpoint recovery | SqliteSaver → Redis (planned) |
 
 ## Stack
@@ -134,7 +137,7 @@ sentinel/
 ## Resume Bullets
 
 **AI Engineer framing:**
-> Engineered a production LangGraph multi-agent system with LangSmith observability — orchestrating SecurityAgent (Semgrep + Claude), DocsAgent, and SupervisorAgent with parallel execution, SqliteSaver state persistence, and human-in-the-loop approval gates. Achieved 15s end-to-end latency on PRs with findings; Claude reduced Semgrep false positives and identified 1 contextual issue (debug endpoint exposure) that raw static analysis missed.
+> Engineered a production LangGraph multi-agent system with LangSmith observability — orchestrating SecurityAgent (Semgrep + Claude Haiku), DocsAgent, and SupervisorAgent with parallel execution, SqliteSaver state persistence, and human-in-the-loop approval gates. Achieved 15s end-to-end latency at $0.016/review; Claude reduced Semgrep false positives and identified 1 contextual issue (debug endpoint exposure) that raw static analysis missed.
 
 **Agentic AI framing:**
-> Architected a stateful multi-agent PR review system in LangGraph — 3 parallel specialized agents, interrupt-based human approval gate, SqliteSaver checkpoint recovery, and GitHub App JWT auth. End-to-end LangSmith tracing across all agent decisions. Supervisor resolves cross-agent conflicts and produces ranked review comments posted directly to GitHub.
+> Architected a stateful multi-agent PR review system in LangGraph — 3 parallel specialized agents, interrupt-based human approval gate, SqliteSaver checkpoint recovery, and GitHub App JWT auth. End-to-end LangSmith tracing across all agent decisions at $0.016/review (Claude Haiku). Supervisor resolves cross-agent conflicts and posts ranked review comments directly to GitHub.
