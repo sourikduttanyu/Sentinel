@@ -55,13 +55,13 @@
 
 ---
 
-## Day 6 — Real PR + Metrics ⬜ TODO
-- [ ] End-to-end run on `Chronos_Pipeline` PR
-- [ ] Manually record: latency, cost, false positive count vs raw Semgrep
-- [ ] Fix any bugs surfaced by real PR
-- [ ] Capture LangSmith trace screenshots
+## Day 6 — Real PR + Metrics ✅ COMPLETE
+- [x] End-to-end run on `Chronos_Pipeline` PR
+- [x] Manually record: latency, cost, false positive count vs raw Semgrep
+- [x] Fix any bugs surfaced by real PR
+- [x] Capture LangSmith trace screenshots
 
-**Verify:** Numbers exist to put in resume bullets
+**Result:** 4.68s clean PR, 15.13s with 6 findings + 3 LLM calls, $0.016/review, $0.003 clean. Numbers in README metrics table.
 
 ---
 
@@ -69,7 +69,10 @@
 - [x] README finalized — architecture, metrics table, resume bullets
 - [x] DEMO.md — full interview script with talking points for every likely question
 - [x] Repo public and clean (no secrets, no WAL files)
-- [ ] LangSmith trace screenshot — grab from smith.langchain.com and add to README
+- [x] LangSmith trace screenshot — added to docs/ and referenced in README
+- [x] FUTURE.md — production architecture doc (infrastructure, scalability, eval harness, multi-tenancy)
+- [x] SETUP.md — full self-setup guide for external users
+- [x] SEO optimized — repo description, 12 GitHub topics, README keyword tuning
 
 ---
 
