@@ -20,10 +20,15 @@ def verify_signature(payload: bytes, signature: str) -> bool:
 
 
 def run_graph(state: dict) -> None:
+    import time
     run_id = state["run_id"]
     config = {"configurable": {"thread_id": run_id}}
+    t0 = time.time()
     try:
         graph.invoke(state, config=config)
+        elapsed = time.time() - t0
+        print(f"[Metrics] run_id={run_id} latency_to_interrupt={elapsed:.2f}s")
+        print(f"[Metrics] approve via: curl -X POST http://localhost:8000/approve/{run_id}")
     except Exception as e:
         print(f"[Graph] stopped at interrupt or error: {e}")
 
