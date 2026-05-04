@@ -53,6 +53,12 @@ GitHub Webhook (PR opened/synchronize)
    Post GitHub PR Comment
 ```
 
+## LangSmith Trace
+
+![LangSmith Trace](./docs/langsmith-trace.png)
+
+*Parallel docs + security nodes, per-node latency, token counts, full state visible*
+
 ## Key Metrics (measured on real PRs)
 
 | Metric | Value |
