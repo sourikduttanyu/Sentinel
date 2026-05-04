@@ -1,6 +1,12 @@
 # Sentinel
 
-> Multi-agent PR review system — LangGraph orchestration, Semgrep static analysis, Claude AI. Reviews pull requests automatically and posts structured findings as GitHub comments.
+> Sentinel automatically reviews pull requests for security vulnerabilities and documentation gaps, then posts a structured, ranked report as a GitHub comment — with a human approval step before anything is posted.
+
+---
+
+## Why This Exists
+
+Code review is a bottleneck. Security issues slip through not because reviewers do not care, but because they are reviewing logic rather than running static analysis and reading every docstring in context. Sentinel does the mechanical part — running Semgrep, querying an LLM, aggregating findings — so human reviewers can focus on what matters.
 
 ---
 
@@ -11,8 +17,8 @@ When a PR is opened or updated:
 1. GitHub App fires a webhook to Sentinel's FastAPI server
 2. PR diff and changed file contents are fetched via JWT-authenticated GitHub API
 3. **SecurityAgent** and **DocsAgent** run in parallel:
-   - SecurityAgent runs Semgrep on changed files, sends findings + diff to Claude → structured severity-ranked issues
-   - DocsAgent sends diff to Claude → flags missing or stale docstrings on changed functions
+   - SecurityAgent runs Semgrep on changed files, sends findings + diff to Claude — structured severity-ranked issues
+   - DocsAgent sends diff to Claude — flags missing or stale docstrings on changed functions
 4. **SupervisorAgent** aggregates both agents, deduplicates, resolves conflicts, produces ranked markdown review
 5. Graph pauses — human approves via `POST /approve/{run_id}`
 6. Sentinel posts the final review as a GitHub PR comment
@@ -145,8 +151,8 @@ sentinel/
 
 ## Technical Highlights
 
-**Parallel agent execution** — SecurityAgent and DocsAgent are both edges from `START` in the LangGraph StateGraph. LangGraph runs them in a thread pool simultaneously. They write to separate state keys so there's no collision. Supervisor reads both after they complete.
+**Parallel agent execution** — SecurityAgent and DocsAgent are both edges from `START` in the LangGraph StateGraph. LangGraph runs them in a thread pool simultaneously. They write to separate state keys so there is no collision. Supervisor reads both after they complete.
 
 **Human-in-the-loop** — Graph compiled with `interrupt_before=["post_comment"]`. State is checkpointed to SQLite after every node. Calling `/approve/{run_id}` resumes the exact graph run from where it paused — survives server restarts.
 
-**False positive reduction** — Semgrep provides pattern-matched findings. Claude reviews them in context of the full diff, filters noise, and adds contextual findings Semgrep can't detect (e.g. debug endpoints with RCE vulnerabilities marked "not for production" but still registered as live routes).
+**False positive reduction** — Semgrep provides pattern-matched findings. Claude reviews them in context of the full diff, filters noise, and adds contextual findings Semgrep cannot detect (e.g. debug endpoints with RCE vulnerabilities marked "not for production" but still registered as live routes).
