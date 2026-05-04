@@ -158,3 +158,9 @@ sentinel/
 **Human-in-the-loop** — Graph compiled with `interrupt_before=["post_comment"]`. State is checkpointed to SQLite after every node. Calling `/approve/{run_id}` resumes the exact graph run from where it paused — survives server restarts.
 
 **False positive reduction** — Semgrep provides pattern-matched findings. Claude reviews them in context of the full diff, filters noise, and adds contextual findings Semgrep cannot detect (e.g. debug endpoints with RCE vulnerabilities marked "not for production" but still registered as live routes).
+
+---
+
+## Production Architecture
+
+For how Sentinel would evolve at scale — SQS-backed worker pool, Redis checkpointing, retrieval-augmented review, eval harness, multi-tenancy, and cost optimization — see **[FUTURE.md](./FUTURE.md)**.
