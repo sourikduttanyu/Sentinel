@@ -9,6 +9,7 @@ class PRReviewState(TypedDict):
     files_content: dict[str, str]  # filename -> full file content at PR head
     security_findings: list[dict]
     docs_findings: list[dict]
+    performance_findings: list[dict]
     supervisor_summary: str
     human_approved: bool
     run_id: str

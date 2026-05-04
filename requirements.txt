@@ -8,3 +8,4 @@ cryptography
 httpx
 python-dotenv
 semgrep
+prometheus-client

@@ -18,10 +18,11 @@ class SupervisorOutput(BaseModel):
 def supervisor_node(state: PRReviewState) -> dict:
     security_findings = state.get("security_findings", [])
     docs_findings = state.get("docs_findings", [])
+    performance_findings = state.get("performance_findings", [])
 
-    print(f"[SupervisorAgent] security: {len(security_findings)} docs: {len(docs_findings)}")
+    print(f"[SupervisorAgent] security: {len(security_findings)} docs: {len(docs_findings)} performance: {len(performance_findings)}")
 
-    if not security_findings and not docs_findings:
+    if not security_findings and not docs_findings and not performance_findings:
         return {
             "supervisor_summary": "No findings. PR looks clean.",
         }
@@ -42,7 +43,12 @@ def supervisor_node(state: PRReviewState) -> dict:
         for f in docs_findings
     ) or "None."
 
-    prompt = f"""You are a senior code review supervisor. Aggregate findings from SecurityAgent and DocsAgent into a final PR review.
+    performance_block = "\n".join(
+        f"- [{f.get('severity', 'UNKNOWN')}] {f.get('file')}:{f.get('line')} [{f.get('pattern')}] — {f.get('description')} | Fix: {f.get('suggestion')}"
+        for f in performance_findings
+    ) or "None."
+
+    prompt = f"""You are a senior code review supervisor. Aggregate findings from SecurityAgent, DocsAgent, and PerformanceAgent into a final PR review.
 
 SECURITY FINDINGS:
 {security_block}
@@ -50,8 +56,11 @@ SECURITY FINDINGS:
 DOCUMENTATION FINDINGS:
 {docs_block}
 
+PERFORMANCE FINDINGS:
+{performance_block}
+
 Instructions:
-1. Deduplicate — if SecurityAgent and DocsAgent flagged the same function for different reasons, merge into one entry.
+1. Deduplicate — if multiple agents flagged the same function for different reasons, merge into one entry.
 2. Rank by severity: CRITICAL → HIGH → MEDIUM → LOW → docs issues.
 3. Resolve conflicts — if two findings overlap (same file+line), keep the more severe one and mention both.
 4. Produce a clean markdown review comment suitable for posting directly on a GitHub PR.
@@ -64,6 +73,9 @@ Markdown format:
 
 ### Security Issues
 <ranked list, each with severity badge, file:line, description, suggestion>
+
+### Performance Issues
+<ranked list, each with severity badge, file:line, pattern, description, suggestion>
 
 ### Documentation Issues
 <list of doc findings>

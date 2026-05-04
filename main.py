@@ -2,6 +2,8 @@ import os
 import sys
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import Response
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from api.webhook import router
 
 # Ensure venv binaries (semgrep) are on PATH
@@ -10,6 +12,11 @@ os.environ["PATH"] = venv_bin + os.pathsep + os.environ.get("PATH", "")
 
 app = FastAPI(title="Sentinel")
 app.include_router(router)
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

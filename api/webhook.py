@@ -1,15 +1,30 @@
 import hashlib
 import hmac
 import json
+import time
 import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
+from prometheus_client import Counter, Histogram, Gauge
 
 from config import GITHUB_WEBHOOK_SECRET
 from graph.workflow import graph
 from tools.github_tool import get_file_content, get_installation_token, get_pr_diff, get_pr_files
 
 router = APIRouter()
+
+reviews_total = Counter("sentinel_reviews_total", "Total PR reviews triggered")
+reviews_approved = Counter("sentinel_reviews_approved", "Total reviews approved and posted")
+review_latency = Histogram(
+    "sentinel_review_latency_seconds",
+    "Latency from webhook to interrupt (seconds)",
+    buckets=[1, 2, 5, 10, 15, 20, 30, 60],
+)
+findings_total = Counter(
+    "sentinel_findings_total",
+    "Total findings by type",
+    ["agent"],  # security, docs, performance
+)
 
 
 def verify_signature(payload: bytes, signature: str) -> bool:
@@ -20,13 +35,17 @@ def verify_signature(payload: bytes, signature: str) -> bool:
 
 
 def run_graph(state: dict) -> None:
-    import time
     run_id = state["run_id"]
-    config = {"configurable": {"thread_id": run_id}}
+    cfg = {"configurable": {"thread_id": run_id}}
     t0 = time.time()
     try:
-        graph.invoke(state, config=config)
+        result = graph.invoke(state, config=cfg)
         elapsed = time.time() - t0
+        review_latency.observe(elapsed)
+        if result:
+            findings_total.labels(agent="security").inc(len(result.get("security_findings", [])))
+            findings_total.labels(agent="docs").inc(len(result.get("docs_findings", [])))
+            findings_total.labels(agent="performance").inc(len(result.get("performance_findings", [])))
         print(f"[Metrics] run_id={run_id} latency_to_interrupt={elapsed:.2f}s")
         print(f"[Metrics] approve via: curl -X POST http://localhost:8000/approve/{run_id}")
     except Exception as e:
@@ -82,11 +101,13 @@ async def webhook(
         "files_content": files_content,
         "security_findings": [],
         "docs_findings": [],
+        "performance_findings": [],
         "supervisor_summary": "",
         "human_approved": False,
         "run_id": run_id,
     }
 
+    reviews_total.inc()
     print(f"[Webhook] Starting graph run: {run_id}")
     background_tasks.add_task(run_graph, state)
 
@@ -95,9 +116,10 @@ async def webhook(
 
 @router.post("/approve/{run_id}")
 async def approve(run_id: str):
-    config = {"configurable": {"thread_id": run_id}}
+    cfg = {"configurable": {"thread_id": run_id}}
     try:
-        result = graph.invoke(None, config=config)
+        result = graph.invoke(None, config=cfg)
+        reviews_approved.inc()
         return {"status": "approved", "run_id": run_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

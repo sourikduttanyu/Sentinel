@@ -3,6 +3,7 @@ import sqlite3
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import StateGraph, START, END
 from agents.docs_agent import docs_node
+from agents.performance_agent import performance_node
 from agents.security_agent import security_node
 from agents.supervisor_agent import supervisor_node
 from models.state import PRReviewState
@@ -26,16 +27,19 @@ def build_graph(checkpointer):
 
     builder.add_node("security", security_node)
     builder.add_node("docs", docs_node)
+    builder.add_node("performance", performance_node)
     builder.add_node("supervisor", supervisor_node)
     builder.add_node("post_comment", post_comment_node)
 
-    # Parallel fan-out
+    # Parallel fan-out — all three agents run simultaneously
     builder.add_edge(START, "security")
     builder.add_edge(START, "docs")
+    builder.add_edge(START, "performance")
 
-    # Both agents → supervisor → post comment
+    # All three agents → supervisor → post comment
     builder.add_edge("security", "supervisor")
     builder.add_edge("docs", "supervisor")
+    builder.add_edge("performance", "supervisor")
     builder.add_edge("supervisor", "post_comment")
     builder.add_edge("post_comment", END)
 
