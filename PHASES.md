@@ -23,35 +23,35 @@
 
 ---
 
-## Day 3 — DocsAgent ⬜ TODO
-- [ ] DocsAgent prompts Claude on changed functions in diff
-- [ ] Detects missing/stale docstrings
-- [ ] Returns structured findings: `{file, function, issue}`
-- [ ] LangSmith dashboard shows both agent traces
+## Day 3 — DocsAgent ✅ COMPLETE
+- [x] DocsAgent prompts Claude on changed functions in diff
+- [x] Detects missing/stale docstrings
+- [x] Returns structured findings: `{file, function, issue}`
+- [x] temperature=0 + per-call LLM init for parallel stability
 
-**Verify:** PR with undocumented functions → DocsAgent flags them
-
----
-
-## Day 4 — SupervisorAgent ⬜ TODO
-- [ ] Reads security_findings + docs_findings from state
-- [ ] Deduplicates overlapping findings
-- [ ] Ranks by severity
-- [ ] Resolves conflicts (same function flagged by both agents)
-- [ ] Produces final review markdown
-
-**Verify:** Combined findings → clean structured review comment
+**Result:** PR #3 → 2 doc findings (missing param + return docs on device_search, eval_config). Parallel execution stable after fixing module-level LLM instantiation.
 
 ---
 
-## Day 5 — Human Gate + GitHub Comment ⬜ TODO
-- [ ] LangGraph `interrupt()` after supervisor
-- [ ] SqliteSaver checkpointer wired
-- [ ] FastAPI `POST /approve/{run_id}` endpoint resumes graph
-- [ ] `post_review_comment` called after approval
-- [ ] Comment appears on actual GitHub PR
+## Day 4 — SupervisorAgent ✅ COMPLETE
+- [x] Reads security_findings + docs_findings from state
+- [x] Deduplicates overlapping findings
+- [x] Ranks by severity CRITICAL → HIGH → MEDIUM → docs
+- [x] Resolves conflicts (same function flagged by both agents)
+- [x] Produces final review markdown with verdict
 
-**Verify:** Full flow — PR opens → review generated → curl approve → comment posted on GitHub
+**Result:** PR #3 → 5 security + 2 docs → clean ranked markdown with REQUEST CHANGES verdict.
+
+---
+
+## Day 5 — Human Gate + GitHub Comment ✅ COMPLETE
+- [x] `interrupt_before=["post_comment"]` on graph compile
+- [x] SqliteSaver checkpointer wired (sentinel.db)
+- [x] FastAPI `POST /approve/{run_id}` endpoint resumes graph
+- [x] `post_review_comment` called after approval
+- [x] Comment visible on GitHub PR #3
+
+**Result:** Full flow verified — graph pauses → curl approve → Sentinel review comment posted on Chronos_Pipeline PR #3.
 
 ---
 

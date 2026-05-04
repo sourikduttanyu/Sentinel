@@ -8,9 +8,9 @@ Sentinel is a stateful multi-agent system that automatically reviews GitHub Pull
 |-----|-------|--------|
 | 1 | Plumbing — webhook, auth, graph skeleton | ✅ Complete |
 | 2 | SecurityAgent — Semgrep + Claude analysis | ✅ Complete |
-| 3 | DocsAgent — docstring detection | ⬜ Todo |
-| 4 | SupervisorAgent — aggregation + conflict resolution | ⬜ Todo |
-| 5 | Human-in-the-loop gate + GitHub comment post | ⬜ Todo |
+| 3 | DocsAgent — docstring detection | ✅ Complete |
+| 4 | SupervisorAgent — aggregation + conflict resolution | ✅ Complete |
+| 5 | Human-in-the-loop gate + GitHub comment post | ✅ Complete |
 | 6 | Real PR run + metrics capture | ⬜ Todo |
 | 7 | Polish + demo prep | ⬜ Todo |
 
