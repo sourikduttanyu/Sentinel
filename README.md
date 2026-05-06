@@ -1,12 +1,24 @@
-# Sentinel — Agentic PR Review with LangGraph, Claude, and Semgrep
+# Sentinel — Multi-Agent PR Review System | LangGraph + Claude + Semgrep + Human-in-the-Loop
 
-> Sentinel automatically reviews pull requests for security vulnerabilities, performance issues, and documentation gaps, then posts a structured, ranked report as a GitHub comment — with a human approval step before anything is posted.
+> A production-grade multi-agent system that automates pull request security, performance, and documentation review using a LangGraph supervisor architecture, Claude LLM, and Semgrep static analysis — with human-in-the-loop approval before any comment is posted.
+
+![Python 3.13](https://img.shields.io/badge/Python-3.13-blue?style=flat) ![LangGraph 1.1.10](https://img.shields.io/badge/LangGraph-1.1.10-orange?style=flat) ![FastAPI](https://img.shields.io/badge/FastAPI-latest-green?style=flat) ![LangSmith](https://img.shields.io/badge/LangSmith-traced-purple?style=flat)
+
+---
+
+## What This Demonstrates
+
+- **Multi-agent orchestration** — Three specialized agents (security, docs, performance) run in parallel inside a LangGraph StateGraph, coordinated by a SupervisorAgent that deduplicates and ranks findings
+- **System design thinking** — Event-driven webhook architecture, durable state checkpointing, human-in-the-loop interrupt, and a clear path to horizontal scale (see [FUTURE.md](./FUTURE.md))
+- **Hybrid reasoning pipeline** — Combines deterministic SAST (Semgrep) with LLM contextual reasoning (Claude) to reduce false positives and surface issues pattern matching alone cannot find
+- **Production-grade observability** — End-to-end LangSmith tracing per node, Prometheus metrics at `GET /metrics`, and a benchmarking script that computes p50/p95/p99 latency from server logs
+- **Cost discipline** — Measured cost per review ($0.003–$0.016), token counts, and LLM call budget tracked on real PRs — not just theoretical
 
 ---
 
 ## Why This Exists
 
-Code review is a bottleneck. Security issues slip through not because reviewers do not care, but because they are reviewing logic rather than running static analysis and reading every docstring in context. Sentinel is an agentic code review system that does the mechanical part — running Semgrep, querying Claude, aggregating findings — so human reviewers can focus on what matters.
+Code review is a bottleneck. Security issues slip through not because reviewers do not care, but because they are reviewing logic rather than running static analysis and reading every docstring in context. Sentinel is an agentic code review automation system that does the mechanical part — running Semgrep, querying Claude, aggregating findings — so human reviewers can focus on what matters.
 
 ---
 
@@ -157,16 +169,33 @@ sentinel/
 
 ## Technical Highlights
 
-**Parallel agent execution** — SecurityAgent, DocsAgent, and PerformanceAgent are all edges from `START` in the LangGraph StateGraph. LangGraph runs all three in a thread pool simultaneously. Each writes to a separate state key so there is no collision. Supervisor reads all three after they complete. Adding a fourth agent requires one new node and one new edge — no graph restructuring.
+### Contextual reasoning over static analysis
 
-**Human-in-the-loop** — Graph compiled with `interrupt_before=["post_comment"]`. State is checkpointed to SQLite after every node. Calling `/approve/{run_id}` resumes the exact graph run from where it paused — survives server restarts.
+This is the core design decision that makes Sentinel useful rather than noisy. Semgrep provides pattern-matched SAST findings across changed files. Claude receives those findings *plus the full diff* and does two things: it filters Semgrep results that do not apply given the surrounding code, and it adds findings that pattern matching structurally cannot detect.
 
-**False positive reduction** — Semgrep provides pattern-matched findings. Claude reviews them in context of the full diff, filters noise, and adds contextual findings Semgrep cannot detect (e.g. debug endpoints with RCE vulnerabilities marked "not for production" but still registered as live routes). This Semgrep + Claude pipeline reduced actionable findings from 6 raw Semgrep results to 4-5 high-confidence issues in measured runs.
+In one measured run, Claude identified a debug endpoint where the route handler contained an RCE vulnerability, the inline comment said "not for production," but the route was still registered and live. Semgrep matched nothing; Claude caught it. This Semgrep + Claude pipeline took 6 raw findings to 4–5 high-confidence, actionable issues.
 
-**Observability** — Every node is traced end-to-end in LangSmith (inputs, outputs, token usage, per-node latency). Prometheus metrics exposed at `GET /metrics`: `sentinel_reviews_total`, `sentinel_review_latency_seconds` (histogram), `sentinel_findings_total` by agent. `scripts/benchmark.py` parses server logs to compute p50/p95/p99 latency across runs.
+### Parallel agent execution
+
+SecurityAgent, DocsAgent, and PerformanceAgent are all edges from `START` in the LangGraph `StateGraph`. LangGraph runs all three in a thread pool simultaneously. Each writes to a separate state key so there is no collision. SupervisorAgent reads all three after they complete. Adding a fourth agent requires one new node and one new edge — no graph restructuring.
+
+### Human-in-the-loop
+
+Graph compiled with `interrupt_before=["post_comment"]`. State is checkpointed to SQLite via `SqliteSaver` after every node. Calling `/approve/{run_id}` resumes the exact graph run from where it paused — survives server restarts.
+
+### Observability
+
+Every node is traced end-to-end in LangSmith (inputs, outputs, token usage, per-node latency). Prometheus metrics exposed at `GET /metrics`: `sentinel_reviews_total`, `sentinel_review_latency_seconds` (histogram), `sentinel_findings_total` by agent. `scripts/benchmark.py` parses server logs to compute p50/p95/p99 latency across runs.
 
 ---
 
 ## Production Architecture
 
-For how Sentinel would evolve at scale — SQS-backed worker pool, Redis checkpointing, retrieval-augmented review, eval harness, multi-tenancy, and cost optimization — see **[FUTURE.md](./FUTURE.md)**.
+For scale, Sentinel's architecture evolves along four axes:
+
+- **Queue-backed execution** — SQS decouples webhook intake from graph execution; N workers process reviews concurrently with no shared state
+- **Redis checkpointing** — Replaces SQLite `SqliteSaver` with Redis for horizontal scaling and cross-node state access
+- **Retrieval-augmented review** — Embed codebase context (past findings, coding standards) into the SecurityAgent and PerformanceAgent prompts via vector search
+- **Eval harness** — Label 10–20 historical PRs with ground-truth findings; measure precision/recall across Semgrep-only vs full Sentinel pipeline
+
+Full production design: **[FUTURE.md](./FUTURE.md)**
