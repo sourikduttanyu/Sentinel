@@ -1,7 +1,6 @@
-from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
-import config
+from agents.llm_factory import get_llm
 from models.state import PRReviewState
 
 
@@ -26,11 +25,7 @@ def docs_node(state: PRReviewState) -> dict:
     if not diff.strip():
         return {"docs_findings": []}
 
-    llm = ChatAnthropic(
-        model="claude-haiku-4-5-20251001",
-        api_key=config.ANTHROPIC_API_KEY,
-        temperature=0,
-    ).with_structured_output(DocsFindings)
+    llm = get_llm(DocsFindings)
 
     files_summary = "\n\n".join(
         f"=== {path} ===\n{content[:3000]}"

@@ -7,3 +7,7 @@ __pycache__/
 sentinel.db
 sentinel.db-shm
 sentinel.db-wal
+.DS_Store
+medium_post.md
+substack_post.md
+screenshots/

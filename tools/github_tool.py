@@ -44,6 +44,19 @@ def get_pr_diff(repo: str, pr_number: int, token: str) -> str:
     return resp.text
 
 
+def get_pr_head_sha(repo: str, pr_number: int, token: str) -> str:
+    resp = httpx.get(
+        f"https://api.github.com/repos/{repo}/pulls/{pr_number}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+    resp.raise_for_status()
+    return resp.json()["head"]["sha"]
+
+
 def get_pr_files(repo: str, pr_number: int, token: str) -> list[str]:
     resp = httpx.get(
         f"https://api.github.com/repos/{repo}/pulls/{pr_number}/files",

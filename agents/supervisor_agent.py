@@ -1,7 +1,6 @@
-from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
-import config
+from agents.llm_factory import get_llm
 from models.state import PRReviewState
 
 
@@ -27,11 +26,7 @@ def supervisor_node(state: PRReviewState) -> dict:
             "supervisor_summary": "No findings. PR looks clean.",
         }
 
-    llm = ChatAnthropic(
-        model="claude-haiku-4-5-20251001",
-        api_key=config.ANTHROPIC_API_KEY,
-        temperature=0,
-    ).with_structured_output(SupervisorOutput)
+    llm = get_llm(SupervisorOutput)
 
     security_block = "\n".join(
         f"- [{f.get('severity', 'UNKNOWN')}] {f.get('file')}:{f.get('line')} — {f.get('description')} | Fix: {f.get('suggestion')}"
