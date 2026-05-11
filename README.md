@@ -44,7 +44,7 @@ Every node is traced end-to-end in LangSmith. Graph state is checkpointed to SQL
 
 ## Architecture
 
-```
+```text
 GitHub Webhook            MCP Client (Claude Desktop / Cursor)
        ↓                              ↓
  FastAPI /webhook           mcp_server.py (stdio)
@@ -76,7 +76,7 @@ GitHub Webhook            MCP Client (Claude Desktop / Cursor)
 Sentinel is backend-agnostic. Control the provider and model with two env vars:
 
 | `LLM_BACKEND` | `LLM_MODEL` (default) | Requires |
-|---|---|---|
+| --- | --- | --- |
 | `anthropic` (default) | `claude-haiku-4-5-20251001` | `ANTHROPIC_API_KEY` |
 | `gemini` | `gemini-2.0-flash` | `GOOGLE_API_KEY` |
 | `openai` | `gpt-4o-mini` | `OPENAI_API_KEY` |
@@ -122,14 +122,14 @@ Claude Desktop config (`~/.claude/claude_desktop_config.json`):
 
 ![LangSmith Trace](./docs/langsmith-trace.png)
 
-*Three parallel nodes (security, docs, performance), per-node latency breakdown, token counts, full state visible at each step*
+Three parallel nodes (security, docs, performance), per-node latency breakdown, token counts, full state visible at each step.
 
 ---
 
 ## Measured on Real PRs
 
 | Metric | Value |
-|---|---|
+| --- | --- |
 | Latency — clean PR (no findings) | 4.68s |
 | Latency — PR with 6 findings, 3 LLM calls | 15.13s |
 | Semgrep raw findings | 6 |
@@ -145,7 +145,7 @@ Claude Desktop config (`~/.claude/claude_desktop_config.json`):
 ## Stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | Orchestration | LangGraph 1.1.10 |
 | LLM (default) | Claude Haiku (claude-haiku-4-5-20251001) |
 | LLM alternatives | Gemini 2.0 Flash, GPT-4o-mini (configurable) |
@@ -173,7 +173,7 @@ python main.py
 
 Required environment variables:
 
-```
+```env
 GITHUB_APP_ID=
 GITHUB_APP_PRIVATE_KEY_PATH=./keys/sentinel.pem
 GITHUB_WEBHOOK_SECRET=
@@ -206,7 +206,7 @@ curl -X POST http://localhost:8000/approve/{run_id}
 
 ## Project Structure
 
-```
+```text
 sentinel/
 ├── api/webhook.py              # Webhook receiver + /approve endpoint + Prometheus instrumentation
 ├── agents/
