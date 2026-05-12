@@ -1,7 +1,6 @@
-from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
-import config
+from agents.llm_factory import get_llm
 from models.state import PRReviewState
 
 
@@ -27,11 +26,7 @@ def performance_node(state: PRReviewState) -> dict:
     if not diff.strip():
         return {"performance_findings": []}
 
-    llm = ChatAnthropic(
-        model="claude-haiku-4-5-20251001",
-        api_key=config.ANTHROPIC_API_KEY,
-        temperature=0,
-    ).with_structured_output(PerformanceFindings)
+    llm = get_llm(PerformanceFindings)
 
     files_summary = "\n\n".join(
         f"=== {path} ===\n{content[:3000]}"

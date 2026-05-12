@@ -2,6 +2,8 @@ fastapi
 uvicorn[standard]
 langgraph
 langchain-anthropic
+langchain-google-genai
+langchain-openai
 langchain
 PyJWT
 cryptography
@@ -9,3 +11,4 @@ httpx
 python-dotenv
 semgrep
 prometheus-client
+mcp

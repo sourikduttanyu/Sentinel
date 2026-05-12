@@ -1,7 +1,6 @@
-from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
 
-import config
+from agents.llm_factory import get_llm
 from models.state import PRReviewState
 from tools.semgrep_tool import run_semgrep
 
@@ -23,11 +22,7 @@ def security_node(state: PRReviewState) -> dict:
     raw_findings = run_semgrep(state.get("files_content", {}))
     print(f"[SecurityAgent] Semgrep found {len(raw_findings)} raw findings")
 
-    llm = ChatAnthropic(
-        model="claude-haiku-4-5-20251001",
-        api_key=config.ANTHROPIC_API_KEY,
-        temperature=0,
-    ).with_structured_output(SecurityFindings)
+    llm = get_llm(SecurityFindings)
 
     diff = state.get("diff", "")
     semgrep_summary = (
